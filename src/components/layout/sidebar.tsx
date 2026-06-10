@@ -1,26 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   MessageSquarePlus,
   Users,
   Filter,
   Send,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { clearToken, type AuthUser } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 
 const NAV = [
-  { href: "/", label: "Overview", icon: LayoutDashboard },
-  { href: "/compose", label: "Compose", icon: MessageSquarePlus },
-  { href: "/customers", label: "Customers", icon: Users },
-  { href: "/segments", label: "Segments", icon: Filter },
-  { href: "/campaigns", label: "Campaigns", icon: Send },
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard/compose", label: "Compose", icon: MessageSquarePlus },
+  { href: "/dashboard/customers", label: "Customers", icon: Users },
+  { href: "/dashboard/segments", label: "Segments", icon: Filter },
+  { href: "/dashboard/campaigns", label: "Campaigns", icon: Send },
 ];
 
-export function Sidebar() {
+export function Sidebar({ user }: { user: AuthUser | null }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/login";
+  }
+
   return (
     <aside className="w-60 shrink-0 border-r bg-muted/30 flex flex-col">
       <div className="h-16 flex items-center px-6 border-b">
@@ -29,7 +39,9 @@ export function Sidebar() {
       <nav className="flex-1 p-3 space-y-1">
         {NAV.map(({ href, label, icon: Icon }) => {
           const active =
-            href === "/" ? pathname === "/" : pathname.startsWith(href);
+            href === "/dashboard"
+              ? pathname === "/dashboard"
+              : pathname.startsWith(href);
           return (
             <Link
               key={href}
@@ -47,6 +59,21 @@ export function Sidebar() {
           );
         })}
       </nav>
+      <div className="p-3 border-t space-y-2">
+        {user && (
+          <div className="px-2 text-sm">
+            <div className="font-medium truncate">
+              {user.name ?? user.email}
+            </div>
+            <div className="text-xs text-muted-foreground truncate">
+              {user.email}
+            </div>
+          </div>
+        )}
+        <Button variant="outline" size="sm" className="w-full" onClick={logout}>
+          <LogOut className="h-4 w-4 mr-2" /> Log out
+        </Button>
+      </div>
     </aside>
   );
 }

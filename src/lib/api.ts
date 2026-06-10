@@ -1,31 +1,29 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
-
 interface ApiError {
   error: string;
   details?: unknown;
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
+  // Calls the Next.js proxy at /api/* (same origin). Proxy attaches the JWT from the httpOnly cookie.
+  const res = await fetch(`/api${path}`, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
+    headers: { "Content-Type": "application/json", ...options?.headers },
   });
+
+  if (res.status === 401) {
+    if (typeof window !== "undefined") window.location.href = "/login";
+    throw new Error("Unauthorized");
+  }
 
   if (!res.ok) {
     let message = `Request failed (${res.status})`;
     try {
       const body = (await res.json()) as ApiError;
       message = body.error ?? message;
-    } catch {
-      /* non-JSON error body */
-    }
+    } catch {}
     throw new Error(message);
   }
 
-  // Some endpoints (204) have no body.
   if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }

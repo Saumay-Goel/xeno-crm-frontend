@@ -81,7 +81,7 @@ export default function ComposePage() {
         },
       );
       toast.success(`Launched to ${res.audienceSize} customers`);
-      router.push(`/campaigns/${res.campaignId}`);
+      router.push(`/dashboard/campaigns/${res.campaignId}`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Launch failed");
     } finally {

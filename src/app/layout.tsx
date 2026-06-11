@@ -1,34 +1,26 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const geistSans = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Xeno CRM",
-  description: "AI-native shopper engagement",
+  title: "XenoTask — AI shopper engagement",
+  description: "AI-native CRM for shopper engagement",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html
-      lang="en"
-      className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased suppressHydrationWarning`}
-    >
-      <body className="min-h-full flex flex-col">
+    <html lang="en" suppressHydrationWarning>
+      <body
+        suppressHydrationWarning
+        className={`${geistSans.className} min-h-full antialiased`}
+      >
         {children}
         <Toaster />
       </body>

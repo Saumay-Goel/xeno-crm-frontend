@@ -48,7 +48,6 @@ export default function CustomersPage() {
     }
   }, [page, search, city]);
 
-  // Debounce search/filter changes.
   useEffect(() => {
     const t = setTimeout(load, 300);
     return () => clearTimeout(t);

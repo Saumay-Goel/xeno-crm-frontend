@@ -19,7 +19,6 @@ export interface Paginated<T> {
   totalPages: number;
 }
 
-// --- Segment rules (mirror of backend segment.types.ts) ---
 export type SegmentField =
   | "total_spend"
   | "order_count"

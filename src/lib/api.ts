@@ -4,7 +4,6 @@ interface ApiError {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  // Calls the Next.js proxy at /api/* (same origin). Proxy attaches the JWT from the httpOnly cookie.
   const res = await fetch(`/api${path}`, {
     ...options,
     headers: { "Content-Type": "application/json", ...options?.headers },

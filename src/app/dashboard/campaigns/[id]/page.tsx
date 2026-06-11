@@ -55,7 +55,6 @@ export default function CampaignDetailPage() {
 
   useEffect(() => {
     load();
-    // Poll while messages are still in flight.
     const interval = setInterval(async () => {
       const res = await load();
       if (res && res.pending === 0) clearInterval(interval);
@@ -107,7 +106,6 @@ export default function CampaignDetailPage() {
         </Card>
       </div>
 
-      {/* Funnel bars */}
       <Card className="p-6 space-y-3">
         <h2 className="font-medium mb-2">Funnel</h2>
         {STAGES.map((stage) => {

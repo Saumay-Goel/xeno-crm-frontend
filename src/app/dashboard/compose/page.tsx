@@ -56,7 +56,7 @@ export default function ComposePage() {
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
-      setMessages(nextMessages); // keep user msg, drop the failed turn
+      setMessages(nextMessages);
     } finally {
       setLoading(false);
     }
@@ -100,7 +100,7 @@ export default function ComposePage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6 h-[calc(100vh-220px)]">
-        <Card className="p-4 flex flex-col">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 flex flex-col">
           <ChatPanel
             messages={messages}
             input={input}
@@ -110,7 +110,7 @@ export default function ComposePage() {
             clarificationOptions={options}
             onPickOption={(opt) => sendTurn(opt)}
           />
-        </Card>
+        </div>
 
         <div className="overflow-y-auto">
           {proposal && audience ? (
@@ -122,10 +122,10 @@ export default function ComposePage() {
               launching={launching}
             />
           ) : (
-            <Card className="p-8 text-center text-muted-foreground h-full flex items-center justify-center">
+            <div className="rounded-2xl border border-dashed border-slate-200 p-8 text-center text-slate-400 h-full flex items-center justify-center">
               Your campaign proposal will appear here once the AI has enough to
               go on.
-            </Card>
+            </div>
           )}
         </div>
       </div>

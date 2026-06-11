@@ -3,10 +3,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Users, IndianRupee, Send, MailOpen } from "lucide-react";
+import { Users, IndianRupee, Send, Mail, TrendingUp } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Cell,
+  Tooltip,
+  PieChart,
+  Pie,
+} from "recharts";
 
 interface DashboardStats {
   customers: number;
@@ -20,15 +28,28 @@ interface DashboardStats {
     deliveryRate: number;
     openRate: number;
   };
-  recentCampaigns: Array<{
+  recentCampaigns: {
     id: string;
     name: string;
     channel: string;
     segmentName: string;
     audience: number;
     createdAt: string;
-  }>;
+  }[];
 }
+
+const fmtINR = (n: number) =>
+  new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(n);
+const CHANNEL_COLORS: Record<string, string> = {
+  whatsapp: "#22c55e",
+  email: "#3b82f6",
+  sms: "#a855f7",
+  rcs: "#f59e0b",
+};
 
 export default function OverviewPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -38,119 +59,249 @@ export default function OverviewPage() {
     api
       .get<DashboardStats>("/insights/dashboard")
       .then(setStats)
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <Skeleton className="h-96 w-full" />;
+  if (loading) return <div className="text-slate-400">Loading…</div>;
   if (!stats)
-    return <p className="text-muted-foreground">Could not load stats.</p>;
+    return <div className="text-slate-400">Couldn’t load dashboard.</div>;
+
+  const m = stats.messaging;
+  const funnelData = [
+    { stage: "Sent", value: m.sent },
+    { stage: "Delivered", value: m.delivered },
+    { stage: "Opened", value: m.opened },
+    { stage: "Converted", value: m.converted },
+  ];
+
+  const channelMap = stats.recentCampaigns.reduce<Record<string, number>>(
+    (acc, c) => {
+      acc[c.channel] = (acc[c.channel] ?? 0) + c.audience;
+      return acc;
+    },
+    {},
+  );
+  const channelData = Object.entries(channelMap).map(([name, value]) => ({
+    name,
+    value,
+  }));
 
   const cards = [
     {
       label: "Customers",
       value: stats.customers.toLocaleString("en-IN"),
       icon: Users,
+      tint: "bg-blue-50 text-blue-600",
     },
     {
       label: "Total revenue",
-      value: `₹${stats.totalRevenue.toLocaleString("en-IN")}`,
+      value: fmtINR(stats.totalRevenue),
       icon: IndianRupee,
+      tint: "bg-green-50 text-green-600",
     },
-    { label: "Campaigns", value: stats.campaigns, icon: Send },
+    {
+      label: "Campaigns",
+      value: stats.campaigns,
+      icon: Send,
+      tint: "bg-purple-50 text-purple-600",
+    },
     {
       label: "Messages sent",
-      value: stats.messaging.sent.toLocaleString("en-IN"),
-      icon: MailOpen,
+      value: m.sent,
+      icon: Mail,
+      tint: "bg-amber-50 text-amber-600",
     },
   ];
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold">Overview</h1>
-        <p className="text-muted-foreground text-sm">
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+          Overview
+        </h1>
+        <p className="text-sm text-slate-500 mt-1">
           Your engagement at a glance.
         </p>
       </div>
 
-      {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map(({ label, value, icon: Icon }) => (
-          <Card key={label} className="p-5">
+          <div
+            key={label}
+            className="rounded-2xl border border-slate-200 bg-white p-5"
+          >
             <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">{label}</span>
-              <Icon className="h-4 w-4 text-primary" />
+              <span className="text-sm text-slate-500">{label}</span>
+              <Icon className="h-4 w-4 text-blue-600" />
             </div>
-            <div className="text-2xl font-semibold mt-2">{value}</div>
-          </Card>
+            <div className="mt-3 text-2xl font-bold text-slate-900">
+              {value}
+            </div>
+          </div>
         ))}
       </div>
 
-      {/* Engagement rates */}
-      <div className="grid sm:grid-cols-3 gap-4">
-        <Card className="p-5">
-          <div className="text-xs text-muted-foreground">Delivery rate</div>
-          <div className="text-2xl font-semibold mt-1">
-            {stats.messaging.deliveryRate}%
+      <div className="grid lg:grid-cols-3 gap-4">
+        {/* Funnel */}
+        <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingUp className="h-4 w-4 text-blue-600" />
+            <h2 className="font-semibold text-slate-900">Engagement funnel</h2>
           </div>
-        </Card>
-        <Card className="p-5">
-          <div className="text-xs text-muted-foreground">Open rate</div>
-          <div className="text-2xl font-semibold mt-1">
-            {stats.messaging.openRate}%
+          <p className="text-sm text-slate-500 mb-5">
+            Across all your campaigns
+          </p>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart
+              data={funnelData}
+              margin={{ top: 8, right: 8, left: -16, bottom: 0 }}
+            >
+              <XAxis
+                dataKey="stage"
+                tickLine={false}
+                axisLine={false}
+                fontSize={12}
+                stroke="#94a3b8"
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                fontSize={12}
+                stroke="#94a3b8"
+              />
+              <Tooltip
+                cursor={{ fill: "#f1f5f9" }}
+                contentStyle={{
+                  borderRadius: 12,
+                  border: "1px solid #e2e8f0",
+                  fontSize: 13,
+                }}
+              />
+              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                {funnelData.map((_, i) => (
+                  <Cell key={i} fill={`rgba(37, 99, 235, ${1 - i * 0.18})`} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-6">
+          <h2 className="font-semibold text-slate-900 mb-1">By channel</h2>
+          <p className="text-sm text-slate-500 mb-5">Recent audience split</p>
+          {channelData.length ? (
+            <ResponsiveContainer width="100%" height={240}>
+              <PieChart>
+                <Pie
+                  data={channelData}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={55}
+                  outerRadius={85}
+                  paddingAngle={3}
+                >
+                  {channelData.map((d, i) => (
+                    <Cell key={i} fill={CHANNEL_COLORS[d.name] ?? "#3b82f6"} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 12,
+                    border: "1px solid #e2e8f0",
+                    fontSize: 13,
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-[240px] flex items-center justify-center text-sm text-slate-400">
+              No campaigns yet
+            </div>
+          )}
+          <div className="mt-4 space-y-1.5">
+            {channelData.map((d) => (
+              <div
+                key={d.name}
+                className="flex items-center justify-between text-sm"
+              >
+                <span className="flex items-center gap-2 text-slate-600 capitalize">
+                  <span
+                    className="h-2.5 w-2.5 rounded-full"
+                    style={{ background: CHANNEL_COLORS[d.name] ?? "#3b82f6" }}
+                  />
+                  {d.name}
+                </span>
+                <span className="text-slate-400">{d.value}</span>
+              </div>
+            ))}
           </div>
-        </Card>
-        <Card className="p-5">
-          <div className="text-xs text-muted-foreground">Conversions</div>
-          <div className="text-2xl font-semibold mt-1">
-            {stats.messaging.converted}
-          </div>
-        </Card>
+        </div>
       </div>
 
-      {/* Recent campaigns */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="font-medium">Recent campaigns</h2>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <span className="text-sm text-slate-500">Delivery rate</span>
+          <div className="mt-2 flex items-end gap-3">
+            <span className="text-2xl font-bold text-slate-900">
+              {m.deliveryRate}%
+            </span>
+            <div className="flex-1 mb-1.5 h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div
+                className="h-full bg-blue-600 rounded-full"
+                style={{ width: `${m.deliveryRate}%` }}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <span className="text-sm text-slate-500">Open rate</span>
+          <div className="mt-2 flex items-end gap-3">
+            <span className="text-2xl font-bold text-slate-900">
+              {m.openRate}%
+            </span>
+            <div className="flex-1 mb-1.5 h-2 rounded-full bg-slate-100 overflow-hidden">
+              <div
+                className="h-full bg-blue-600 rounded-full"
+                style={{ width: `${m.openRate}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-semibold text-slate-900">Recent campaigns</h2>
           <Link
-            href="/campaigns"
-            className="text-sm text-primary hover:underline"
+            href="/dashboard/campaigns"
+            className="text-sm font-medium text-blue-600 hover:underline"
           >
             View all
           </Link>
         </div>
-        {stats.recentCampaigns.length === 0 ? (
-          <Card className="p-6 text-center text-muted-foreground text-sm">
-            No campaigns yet.{" "}
-            <Link href="/compose" className="text-primary hover:underline">
-              Build one
+        <div className="space-y-2">
+          {stats.recentCampaigns.map((c) => (
+            <Link
+              key={c.id}
+              href={`/dashboard/campaigns/${c.id}`}
+              className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-5 py-4 hover:border-slate-300 transition-colors"
+            >
+              <div>
+                <div className="font-medium text-slate-900">{c.name}</div>
+                <div className="text-sm text-slate-400">{c.segmentName}</div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 capitalize">
+                  {c.channel}
+                </span>
+                <span className="text-sm text-slate-400">
+                  {c.audience} sent
+                </span>
+              </div>
             </Link>
-            .
-          </Card>
-        ) : (
-          <div className="space-y-2">
-            {stats.recentCampaigns.map((c) => (
-              <Link key={c.id} href={`/campaigns/${c.id}`}>
-                <Card className="p-4 flex items-center justify-between hover:border-primary/40 transition-colors">
-                  <div>
-                    <div className="font-medium">{c.name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {c.segmentName}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="secondary" className="capitalize">
-                      {c.channel}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      {c.audience} sent
-                    </span>
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        )}
+          ))}
+        </div>
       </div>
     </div>
   );

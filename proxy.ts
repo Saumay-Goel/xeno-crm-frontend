@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function proxy(req: NextRequest) {
+  console.log(
+    "[proxy] running:",
+    req.nextUrl.pathname,
+    "token:",
+    !!req.cookies.get("xeno_token")?.value,
+  );
   const token = req.cookies.get("xeno_token")?.value;
   const { pathname } = req.nextUrl;
 

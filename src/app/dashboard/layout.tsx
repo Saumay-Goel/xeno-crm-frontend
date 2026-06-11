@@ -3,14 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "@/components/layout/sidebar";
+import { getToken, type AuthUser } from "@/lib/auth";
 import { api } from "@/lib/api";
-
-interface AuthUser {
-  id: string;
-  email: string;
-  name: string | null;
-  avatarUrl: string | null;
-}
 
 export default function DashboardLayout({
   children,
@@ -22,6 +16,10 @@ export default function DashboardLayout({
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    if (!getToken()) {
+      router.replace("/login");
+      return;
+    }
     api
       .get<AuthUser>("/auth/me")
       .then((u) => {
@@ -33,7 +31,7 @@ export default function DashboardLayout({
 
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-slate-400">
+      <div className="min-h-screen flex items-center justify-center text-muted-foreground">
         Loading…
       </div>
     );

@@ -107,6 +107,36 @@ export default function LoginPage() {
             </p>
           </div>
 
+          {/* Take-Home Demo Note */}
+          {mode === "login" && (
+            <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-blue-900">
+                    Evaluating this assignment?
+                  </p>
+                  <p className="text-xs text-blue-700/80 leading-relaxed">
+                    Use the demo credentials below, or feel free to sign up /
+                    use Google.
+                  </p>
+                  <div className="pt-2 font-mono text-[11px] text-blue-800 space-y-0.5">
+                    <div>Email: demo@xenotask.com</div>
+                    <div>Password: demo123</div>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setEmail("demo@xenotask.com");
+                    setPassword("demo123");
+                  }}
+                  className="shrink-0 rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-200 transition-colors shadow-sm"
+                >
+                  Auto-fill
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-3">
             {mode === "signup" && (
               <input
@@ -188,7 +218,11 @@ export default function LoginPage() {
                 No account?{" "}
                 <button
                   className="font-medium text-blue-600 hover:underline"
-                  onClick={() => setMode("signup")}
+                  onClick={() => {
+                    setMode("signup");
+                    setEmail("");
+                    setPassword("");
+                  }}
                 >
                   Sign up
                 </button>

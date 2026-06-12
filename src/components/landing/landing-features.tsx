@@ -28,26 +28,28 @@ const FEATURES = [
 export function Features() {
   return (
     <section id="features" className="bg-slate-50 border-y border-slate-100">
-      <div className="max-w-5xl mx-auto px-6 py-24">
-        <div className="text-center mb-14">
-          <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
             Everything you need to re-engage shoppers
           </h2>
-          <p className="mt-3 text-slate-500">
+          <p className="mt-4 text-base sm:text-lg text-slate-500">
             Built for marketers, not data analysts.
           </p>
         </div>
-        <div className="grid md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map((f) => (
             <div
               key={f.title}
-              className="rounded-2xl border border-slate-100 bg-white p-6"
+              className="rounded-2xl border border-slate-100 bg-white p-6 sm:p-8 transition-all duration-300 hover:shadow-lg hover:shadow-slate-200/50"
             >
-              <div className="h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center mb-4">
-                <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
+              <div className="h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center mb-5 ring-1 ring-blue-100/50">
+                <span className="h-3 w-3 rounded-full bg-blue-600 shadow-sm shadow-blue-600/50" />
               </div>
-              <h3 className="font-semibold text-slate-900">{f.title}</h3>
-              <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+              <h3 className="text-base font-semibold text-slate-900">
+                {f.title}
+              </h3>
+              <p className="mt-2.5 text-sm text-slate-500 leading-relaxed">
                 {f.body}
               </p>
             </div>

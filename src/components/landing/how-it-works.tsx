@@ -18,24 +18,32 @@ const STEPS = [
 
 export function HowItWorks() {
   return (
-    <section id="how" className="max-w-5xl mx-auto px-6 py-24">
-      <div className="text-center mb-14">
-        <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+    <section id="how" className="max-w-5xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
+      <div
+        className="text-center mb-12 sm:mb-16 animate-fade-up"
+        style={{ animationDelay: "600ms" }}
+      >
+        <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900">
           From idea to campaign in seconds
         </h2>
-        <p className="mt-3 text-slate-500">
+        <p className="mt-4 text-base sm:text-lg text-slate-500">
           Three steps. No spreadsheets, no SQL.
         </p>
       </div>
-      <div className="grid md:grid-cols-3 gap-6">
-        {STEPS.map((s) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
+        {STEPS.map((s, i) => (
           <div
             key={s.n}
-            className="relative rounded-2xl border border-slate-100 bg-white p-6"
+            className="group relative rounded-2xl border border-slate-100 bg-white p-6 sm:p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-900/5 hover:border-blue-100 animate-fade-up"
+            style={{ animationDelay: `${700 + i * 100}ms` }}
           >
-            <div className="text-sm font-bold text-blue-600">{s.n}</div>
-            <h3 className="mt-3 font-semibold text-slate-900">{s.title}</h3>
-            <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-sm font-bold text-blue-600 mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+              {s.n}
+            </div>
+            <h3 className="mt-4 text-lg font-semibold text-slate-900">
+              {s.title}
+            </h3>
+            <p className="mt-2.5 text-sm sm:text-base text-slate-500 leading-relaxed">
               {s.body}
             </p>
           </div>

@@ -13,7 +13,6 @@ import type {
 } from "@/types";
 import { ChatPanel } from "@/components/compose/chat-panel";
 import { ProposalCard } from "@/components/compose/proposal-card";
-import { Card } from "@/components/ui/card";
 
 export default function ComposePage() {
   const router = useRouter();
@@ -90,17 +89,19 @@ export default function ComposePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 lg:p-8">
       <div>
-        <h1 className="text-2xl font-semibold">Compose</h1>
-        <p className="text-muted-foreground text-sm">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+          Compose
+        </h1>
+        <p className="text-sm sm:text-base text-slate-500 mt-1">
           Describe who to reach and what to say. The AI proposes; you review and
           launch.
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6 h-[calc(100vh-220px)]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 flex flex-col">
+      <div className="flex flex-col lg:grid lg:grid-cols-2 gap-4 sm:gap-6 lg:h-[calc(100vh-220px)] min-h-0">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 flex flex-col h-[500px] lg:h-full shadow-sm min-h-0">
           <ChatPanel
             messages={messages}
             input={input}
@@ -112,19 +113,23 @@ export default function ComposePage() {
           />
         </div>
 
-        <div className="overflow-y-auto">
+        <div className="flex-1 lg:overflow-y-auto min-h-0">
           {proposal && audience ? (
-            <ProposalCard
-              key={proposal.segmentName + proposal.message + proposal.channel}
-              proposal={proposal}
-              audience={audience}
-              onLaunch={handleLaunch}
-              launching={launching}
-            />
+            <div className="h-full pb-6 lg:pb-0">
+              <ProposalCard
+                key={proposal.segmentName + proposal.message + proposal.channel}
+                proposal={proposal}
+                audience={audience}
+                onLaunch={handleLaunch}
+                launching={launching}
+              />
+            </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-slate-200 p-8 text-center text-slate-400 h-full flex items-center justify-center">
-              Your campaign proposal will appear here once the AI has enough to
-              go on.
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center text-slate-500 text-sm h-full min-h-[250px] lg:min-h-0 flex items-center justify-center shadow-sm">
+              <span className="max-w-xs">
+                Your campaign proposal will appear here once the AI has enough
+                to go on.
+              </span>
             </div>
           )}
         </div>

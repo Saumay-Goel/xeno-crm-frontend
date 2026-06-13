@@ -107,7 +107,6 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Take-Home Demo Note */}
           {mode === "login" && (
             <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4">
               <div className="flex items-start justify-between gap-3">
@@ -120,14 +119,14 @@ export default function LoginPage() {
                     use Google.
                   </p>
                   <div className="pt-2 font-mono text-[11px] text-blue-800 space-y-0.5">
-                    <div>Email: demo@xenotask.com</div>
-                    <div>Password: demo123</div>
+                    <div>Email: demo@gmail.com</div>
+                    <div>Password: 1048576s</div>
                   </div>
                 </div>
                 <button
                   onClick={() => {
-                    setEmail("demo@xenotask.com");
-                    setPassword("demo123");
+                    setEmail("demo@gmail.com");
+                    setPassword("1048576s");
                   }}
                   className="shrink-0 rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-200 transition-colors shadow-sm"
                 >

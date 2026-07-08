@@ -48,13 +48,12 @@ export default function ComposePage() {
         setProposal(null);
         setAudience(null);
       } else if (res.kind === "query") {
-        const count = res.audience.count;
         setMessages([
           ...nextMessages,
           {
             role: "assistant",
-            content: `Found ${count} customer${count === 1 ? "" : "s"} — ${res.intent}`,
-            customers: { count, rows: res.audience.preview },
+            content: `${res.intent} — ${res.rowCount} result${res.rowCount === 1 ? "" : "s"}`,
+            queryResult: { rows: res.rows, rowCount: res.rowCount },
           },
         ]);
         setProposal(null);

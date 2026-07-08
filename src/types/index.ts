@@ -50,7 +50,10 @@ export interface CustomerRow {
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
-  customers?: { count: number; rows: CustomerRow[] };
+  queryResult?: {
+    rows: Record<string, unknown>[];
+    rowCount: number;
+  };
 }
 
 export interface AudiencePreview {
@@ -91,4 +94,9 @@ export interface ProposeClarificationResponse {
 export type ProposeResponse =
   | { kind: "proposal"; proposal: CampaignProposal; audience: AudiencePreview }
   | { kind: "clarification"; question: string; options: string[] }
-  | { kind: "query"; intent: string; audience: AudiencePreview };
+  | {
+      kind: "query";
+      intent: string;
+      rows: Record<string, unknown>[];
+      rowCount: number;
+    };

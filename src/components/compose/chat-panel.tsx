@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import type { ChatMessage, CustomerRow } from "@/types";
+import type { ChatMessage } from "@/types";
 import { Sparkles } from "lucide-react";
 
 interface Props {
@@ -14,60 +14,68 @@ interface Props {
   onPickOption: (option: string) => void;
 }
 
-function CustomerTable({
+function ResultTable({
   data,
 }: {
-  data: { count: number; rows: CustomerRow[] };
+  data: { rows: Record<string, unknown>[]; rowCount: number };
 }) {
   if (data.rows.length === 0) {
-    return (
-      <div className="mt-2 text-xs text-slate-500">
-        No customers matched this query.
-      </div>
-    );
+    return <div className="mt-2 text-xs text-slate-500">No results.</div>;
   }
+
+  const columns = Object.keys(data.rows[0]);
+
+  const formatCell = (val: unknown): string => {
+    if (val === null || val === undefined) return "—";
+    if (typeof val === "number") return val.toLocaleString("en-IN");
+    if (typeof val === "string" && val !== "" && !isNaN(Number(val))) {
+      return Number(val).toLocaleString("en-IN");
+    }
+    return String(val);
+  };
+
+  const prettify = (col: string) =>
+    col
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .replace(/_/g, " ")
+      .replace(/^\w/, (c) => c.toUpperCase());
 
   return (
     <div className="mt-3 -mx-1 overflow-x-auto rounded-lg border border-slate-200 bg-white">
       <table className="w-full text-xs">
         <thead>
           <tr className="border-b border-slate-200 bg-slate-50 text-slate-500">
-            <th className="px-3 py-2 text-left font-medium">Name</th>
-            <th className="px-3 py-2 text-left font-medium">City</th>
-            <th className="px-3 py-2 text-right font-medium">Spend</th>
-            <th className="px-3 py-2 text-right font-medium">Orders</th>
-            <th className="px-3 py-2 text-right font-medium">Last order</th>
+            {columns.map((col) => (
+              <th
+                key={col}
+                className="px-3 py-2 text-left font-medium whitespace-nowrap"
+              >
+                {prettify(col)}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {data.rows.map((c) => (
+          {data.rows.map((row, i) => (
             <tr
-              key={c.id}
+              key={i}
               className="border-b border-slate-100 last:border-0 hover:bg-slate-50"
             >
-              <td className="px-3 py-2">
-                <div className="font-medium text-slate-800">{c.name}</div>
-                <div className="text-[10px] text-slate-400">{c.email}</div>
-              </td>
-              <td className="px-3 py-2 text-slate-600">{c.city ?? "—"}</td>
-              <td className="px-3 py-2 text-right tabular-nums text-slate-700">
-                ₹{c.totalSpend.toLocaleString("en-IN")}
-              </td>
-              <td className="px-3 py-2 text-right tabular-nums text-slate-700">
-                {c.orderCount}
-              </td>
-              <td className="px-3 py-2 text-right tabular-nums text-slate-500">
-                {c.daysSinceLastOrder === null
-                  ? "never"
-                  : `${c.daysSinceLastOrder}d ago`}
-              </td>
+              {columns.map((col) => (
+                <td
+                  key={col}
+                  className="px-3 py-2 text-slate-700 whitespace-nowrap"
+                >
+                  {formatCell(row[col])}
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>
       </table>
-      {data.count > data.rows.length && (
+      {data.rowCount > data.rows.length && (
         <div className="px-3 py-2 text-[11px] text-slate-400 bg-slate-50 border-t border-slate-100">
-          Showing {data.rows.length} of {data.count} matching customers
+          Showing {data.rows.length} of {data.rowCount} results
         </div>
       )}
     </div>
@@ -119,11 +127,11 @@ export function ChatPanel({
               <Sparkles className="h-6 w-6 text-blue-600" />
             </div>
             <p className="font-semibold text-slate-700 text-sm sm:text-base">
-              Describe a campaign in plain English
+              Describe a campaign, or ask about your customers
             </p>
             <p className="text-xs sm:text-sm text-slate-400 max-w-[280px] leading-relaxed">
               e.g. “win back customers who spent over ₹5000 but haven’t ordered
-              in 2 months, 20% off”
+              in 2 months” — or “how many customers are in each city?”
             </p>
           </div>
         )}
@@ -143,7 +151,7 @@ export function ChatPanel({
             <div key={i} className="flex justify-start">
               <div className="relative max-w-[85%] rounded-2xl rounded-bl-sm bg-slate-100 px-4 py-2.5 text-sm text-slate-800 leading-relaxed border border-slate-200/50 shadow-sm">
                 {m.content}
-                {m.customers && <CustomerTable data={m.customers} />}
+                {m.queryResult && <ResultTable data={m.queryResult} />}
                 <span
                   className="absolute -left-1.5 bottom-0 h-3 w-3 bg-slate-100"
                   style={{ clipPath: "polygon(100% 0, 100% 100%, 0 100%)" }}
@@ -196,7 +204,7 @@ export function ChatPanel({
               onSend();
             }
           }}
-          placeholder="Describe your campaign…"
+          placeholder="Describe a campaign or ask about customers…"
           rows={1}
           className="flex-1 resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-100 shadow-sm min-h-[44px] max-h-32"
         />

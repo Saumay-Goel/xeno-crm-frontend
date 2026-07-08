@@ -47,6 +47,18 @@ export default function ComposePage() {
         setOptions(res.options);
         setProposal(null);
         setAudience(null);
+      } else if (res.kind === "query") {
+        const count = res.audience.count;
+        setMessages([
+          ...nextMessages,
+          {
+            role: "assistant",
+            content: `Found ${count} customer${count === 1 ? "" : "s"} — ${res.intent}`,
+            customers: { count, rows: res.audience.preview },
+          },
+        ]);
+        setProposal(null);
+        setAudience(null);
       } else {
         const summary = `Proposed “${res.proposal.segmentName}” — ${res.audience.count} customers, via ${res.proposal.channel}.`;
         setMessages([...nextMessages, { role: "assistant", content: summary }]);
@@ -95,8 +107,8 @@ export default function ComposePage() {
           Compose
         </h1>
         <p className="text-sm sm:text-base text-slate-500 mt-1">
-          Describe who to reach and what to say. The AI proposes; you review and
-          launch.
+          Describe who to reach and what to say, or ask to see customers. The AI
+          proposes; you review and launch.
         </p>
       </div>
 

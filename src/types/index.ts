@@ -37,7 +37,22 @@ export interface Group {
 }
 export type Rule = Condition | Group;
 
-// --- AI proposal contract ---
+export interface CustomerRow {
+  id: string;
+  name: string;
+  email: string;
+  city: string | null;
+  totalSpend: number;
+  orderCount: number;
+  daysSinceLastOrder: number | null;
+}
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+  customers?: { count: number; rows: CustomerRow[] };
+}
+
 export interface AudiencePreview {
   count: number;
   preview: Array<{
@@ -74,10 +89,6 @@ export interface ProposeClarificationResponse {
 }
 
 export type ProposeResponse =
-  | ProposeProposalResponse
-  | ProposeClarificationResponse;
-
-export interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-}
+  | { kind: "proposal"; proposal: CampaignProposal; audience: AudiencePreview }
+  | { kind: "clarification"; question: string; options: string[] }
+  | { kind: "query"; intent: string; audience: AudiencePreview };

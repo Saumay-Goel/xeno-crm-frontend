@@ -99,4 +99,6 @@ export type ProposeResponse =
       intent: string;
       rows: Record<string, unknown>[];
       rowCount: number;
-    };
+      sql: string;
+    }
+  | { kind: "chat"; message: string };

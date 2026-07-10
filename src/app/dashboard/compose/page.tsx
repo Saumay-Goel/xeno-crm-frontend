@@ -47,6 +47,13 @@ export default function ComposePage() {
         setOptions(res.options);
         setProposal(null);
         setAudience(null);
+      } else if (res.kind === "chat") {
+        setMessages([
+          ...nextMessages,
+          { role: "assistant", content: res.message },
+        ]);
+        setProposal(null);
+        setAudience(null);
       } else if (res.kind === "query") {
         setMessages([
           ...nextMessages,

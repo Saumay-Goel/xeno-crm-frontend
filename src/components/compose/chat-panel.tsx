@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import type { ChatMessage } from "@/types";
 import { Sparkles } from "lucide-react";
 
@@ -12,6 +12,9 @@ interface Props {
   loading: boolean;
   clarificationOptions: string[];
   onPickOption: (option: string) => void;
+  datasets: { id: string; name: string }[];
+  activeDataset: { id: string; name: string } | null;
+  setActiveDataset: (d: { id: string; name: string }) => void;
 }
 
 function ResultTable({
@@ -90,15 +93,45 @@ export function ChatPanel({
   loading,
   clarificationOptions,
   onPickOption,
+  datasets,
+  activeDataset,
+  setActiveDataset,
 }: Props) {
   const endRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  const [showPicker, setShowPicker] = useState(false);
+  const [pickerFilter, setPickerFilter] = useState("");
+
+  function handleInputChange(v: string) {
+    setInput(v);
+    const match = v.match(/@(\w*)$/);
+    if (match) {
+      setShowPicker(true);
+      setPickerFilter(match[1].toLowerCase());
+    } else {
+      setShowPicker(false);
+    }
+  }
+
+  function pickDataset(d: { id: string; name: string }) {
+    setActiveDataset(d);
+    setInput(input.replace(/@\w*$/, "").trimEnd() + " ");
+    setShowPicker(false);
+  }
+
+  const filteredDatasets = datasets.filter((d) =>
+    d.name.toLowerCase().includes(pickerFilter),
+  );
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* header */}
       <div className="flex shrink-0 items-center gap-2.5 pb-3 mb-3 border-b border-slate-100">
         <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center shadow-sm">
           <svg viewBox="0 0 24 24" className="h-4 w-4 text-white" fill="none">
@@ -194,35 +227,63 @@ export function ChatPanel({
         <div ref={endRef} className="h-1" />
       </div>
 
-      <div className="shrink-0 pt-3 mt-3 border-t border-slate-100 flex items-end gap-2">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              onSend();
-            }
-          }}
-          placeholder="Describe a campaign or ask about customers…"
-          rows={1}
-          className="flex-1 resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-100 shadow-sm min-h-[44px] max-h-32"
-        />
-        <button
-          onClick={onSend}
-          disabled={loading || !input.trim()}
-          className="shrink-0 h-[44px] w-[44px] rounded-xl bg-blue-600 text-white flex items-center justify-center transition-all hover:bg-blue-700 hover:shadow-md disabled:opacity-40 disabled:hover:shadow-none shadow-sm"
-        >
-          <svg viewBox="0 0 24 24" className="h-5 w-5 ml-0.5" fill="none">
-            <path
-              d="M5 12h14M13 6l6 6-6 6"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+      <div className="shrink-0 pt-3 mt-3 border-t border-slate-100">
+        {activeDataset && (
+          <div className="mb-2 flex items-center gap-1.5 text-xs text-slate-500">
+            <span className="rounded-md bg-blue-50 text-blue-700 px-2 py-1 font-medium">
+              @{activeDataset.name}
+            </span>
+            <span>active — type @ to switch dataset</span>
+          </div>
+        )}
+
+        <div className="relative flex items-end gap-2">
+          {showPicker && filteredDatasets.length > 0 && (
+            <div className="absolute bottom-full mb-2 left-0 w-64 rounded-xl border border-slate-200 bg-white shadow-lg overflow-hidden z-10">
+              <div className="px-3 py-2 text-[11px] font-medium text-slate-400 border-b border-slate-100">
+                Select a dataset
+              </div>
+              {filteredDatasets.map((d) => (
+                <button
+                  key={d.id}
+                  onClick={() => pickDataset(d)}
+                  className="w-full text-left px-3 py-2 text-sm text-slate-700 hover:bg-blue-50 transition-colors"
+                >
+                  {d.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <textarea
+            value={input}
+            onChange={(e) => handleInputChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey && !showPicker) {
+                e.preventDefault();
+                onSend();
+              }
+            }}
+            placeholder="Describe a campaign or ask about customers…"
+            rows={1}
+            className="flex-1 resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-100 shadow-sm min-h-[44px] max-h-32"
+          />
+          <button
+            onClick={onSend}
+            disabled={loading || !input.trim()}
+            className="shrink-0 h-[44px] w-[44px] rounded-xl bg-blue-600 text-white flex items-center justify-center transition-all hover:bg-blue-700 hover:shadow-md disabled:opacity-40 disabled:hover:shadow-none shadow-sm"
+          >
+            <svg viewBox="0 0 24 24" className="h-5 w-5 ml-0.5" fill="none">
+              <path
+                d="M5 12h14M13 6l6 6-6 6"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );

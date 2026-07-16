@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
@@ -10,9 +10,18 @@ import type {
   CampaignProposal,
   AudiencePreview,
   Channel,
+  DatasetProposal,
+  DatasetAudience,
+  ContactCandidate,
 } from "@/types";
 import { ChatPanel } from "@/components/compose/chat-panel";
 import { ProposalCard } from "@/components/compose/proposal-card";
+import { DatasetProposalCard } from "@/components/compose/dataset-proposal-card";
+
+interface Dataset {
+  id: string;
+  name: string;
+}
 
 export default function ComposePage() {
   const router = useRouter();
@@ -23,6 +32,23 @@ export default function ComposePage() {
   const [audience, setAudience] = useState<AudiencePreview | null>(null);
   const [options, setOptions] = useState<string[]>([]);
   const [launching, setLaunching] = useState(false);
+  const [datasets, setDatasets] = useState<Dataset[]>([]);
+  const [activeDataset, setActiveDataset] = useState<Dataset | null>(null);
+  const [datasetProposal, setDatasetProposal] = useState<{
+    proposal: DatasetProposal;
+    audience: DatasetAudience;
+    contactCandidates: ContactCandidate[];
+  } | null>(null);
+
+  useEffect(() => {
+    api
+      .get<Dataset[]>("/datasets")
+      .then((d) => {
+        setDatasets(d);
+        if (d.length > 0) setActiveDataset(d[0]);
+      })
+      .catch(() => {});
+  }, []);
 
   async function sendTurn(content: string) {
     const nextMessages: ChatMessage[] = [
@@ -37,6 +63,7 @@ export default function ComposePage() {
     try {
       const res = await api.post<ProposeResponse>("/ai/propose", {
         messages: nextMessages,
+        datasetId: activeDataset?.id,
       });
 
       if (res.kind === "clarification") {
@@ -47,6 +74,22 @@ export default function ComposePage() {
         setOptions(res.options);
         setProposal(null);
         setAudience(null);
+        setDatasetProposal(null);
+      } else if (res.kind === "dataset_proposal") {
+        setMessages([
+          ...nextMessages,
+          {
+            role: "assistant",
+            content: `Proposed “${res.proposal.segmentName}” — ${res.audience.count} ${res.audience.count === 1 ? "recipient" : "recipients"} via ${res.proposal.channel}.`,
+          },
+        ]);
+        setProposal(null);
+        setAudience(null);
+        setDatasetProposal({
+          proposal: res.proposal,
+          audience: res.audience,
+          contactCandidates: res.contactCandidates,
+        });
       } else if (res.kind === "chat") {
         setMessages([
           ...nextMessages,
@@ -54,6 +97,7 @@ export default function ComposePage() {
         ]);
         setProposal(null);
         setAudience(null);
+        setDatasetProposal(null);
       } else if (res.kind === "query") {
         setMessages([
           ...nextMessages,
@@ -65,11 +109,13 @@ export default function ComposePage() {
         ]);
         setProposal(null);
         setAudience(null);
+        setDatasetProposal(null);
       } else {
         const summary = `Proposed “${res.proposal.segmentName}” — ${res.audience.count} customers, via ${res.proposal.channel}.`;
         setMessages([...nextMessages, { role: "assistant", content: summary }]);
         setProposal(res.proposal);
         setAudience(res.audience);
+        setDatasetProposal(null);
       }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Something went wrong");
@@ -106,6 +152,29 @@ export default function ComposePage() {
     }
   }
 
+  async function handleLaunchDataset(payload: {
+    datasetId: string;
+    name: string;
+    channel: Channel;
+    contactColumn: string;
+    messageTemplate: string;
+    audienceSql: string;
+  }) {
+    setLaunching(true);
+    try {
+      const res = await api.post<{ campaignId: string; audienceSize: number }>(
+        "/campaigns/launch-dataset",
+        payload,
+      );
+      toast.success(`Launched to ${res.audienceSize} recipients`);
+      router.push(`/dashboard/campaigns/${res.campaignId}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Launch failed");
+    } finally {
+      setLaunching(false);
+    }
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 lg:p-8">
       <div>
@@ -128,11 +197,25 @@ export default function ComposePage() {
             loading={loading}
             clarificationOptions={options}
             onPickOption={(opt) => sendTurn(opt)}
+            datasets={datasets}
+            activeDataset={activeDataset}
+            setActiveDataset={setActiveDataset}
           />
         </div>
 
         <div className="flex-1 lg:overflow-y-auto min-h-0">
-          {proposal && audience ? (
+          {datasetProposal && activeDataset ? (
+            <div className="h-full pb-6 lg:pb-0">
+              <DatasetProposalCard
+                proposal={datasetProposal.proposal}
+                audience={datasetProposal.audience}
+                contactCandidates={datasetProposal.contactCandidates}
+                datasetId={activeDataset.id}
+                onLaunch={handleLaunchDataset}
+                launching={launching}
+              />
+            </div>
+          ) : proposal && audience ? (
             <div className="h-full pb-6 lg:pb-0">
               <ProposalCard
                 key={proposal.segmentName + proposal.message + proposal.channel}

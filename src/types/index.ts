@@ -24,18 +24,36 @@ export type SegmentField =
   | "order_count"
   | "days_since_last_order"
   | "city"
-  | "signup_source";
-export type Operator = "eq" | "neq" | "gt" | "gte" | "lt" | "lte" | "in";
+  | "signup_source"
+  | "name"
+  | "email";
+
+export type Operator =
+  | "eq"
+  | "neq"
+  | "gt"
+  | "gte"
+  | "lt"
+  | "lte"
+  | "in"
+  | "contains";
+
 export interface Condition {
   field: SegmentField;
   op: Operator;
   value: string | number | Array<string | number>;
 }
+
 export interface Group {
   combinator: "and" | "or";
   rules: Rule[];
 }
+
 export type Rule = Condition | Group;
+
+export function isGroup(rule: Rule): rule is Group {
+  return (rule as Group).combinator !== undefined;
+}
 
 export interface CustomerRow {
   id: string;
@@ -79,16 +97,26 @@ export interface CampaignProposal {
   assumptions: string[];
 }
 
-export interface ProposeProposalResponse {
-  kind: "proposal";
-  proposal: CampaignProposal;
-  audience: AudiencePreview;
+export interface ContactCandidate {
+  key: string;
+  name: string;
+  kind: "email" | "phone";
+  confidence: number;
 }
 
-export interface ProposeClarificationResponse {
-  kind: "clarification";
-  question: string;
-  options: string[];
+export interface DatasetProposal {
+  segmentName: string;
+  contactColumn: string;
+  channel: Channel;
+  message: string;
+  reasoning: string;
+  assumptions: string[];
+  audienceSql: string;
+}
+
+export interface DatasetAudience {
+  count: number;
+  sample: Record<string, unknown>[];
 }
 
 export type ProposeResponse =
@@ -101,4 +129,10 @@ export type ProposeResponse =
       rowCount: number;
       sql: string;
     }
-  | { kind: "chat"; message: string };
+  | { kind: "chat"; message: string }
+  | {
+      kind: "dataset_proposal";
+      proposal: DatasetProposal;
+      audience: DatasetAudience;
+      contactCandidates: ContactCandidate[];
+    };

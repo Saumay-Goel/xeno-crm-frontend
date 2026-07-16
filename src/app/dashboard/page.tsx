@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { Users, IndianRupee, Send, Mail, TrendingUp } from "lucide-react";
+import { Database, Rows3, Send, Mail, TrendingUp } from "lucide-react";
 import { TruckLoader } from "@/components/ui/truck-loader";
 
 import {
@@ -19,8 +19,8 @@ import {
 } from "recharts";
 
 interface DashboardStats {
-  customers: number;
-  totalRevenue: number;
+  datasets: number;
+  totalRows: number;
   campaigns: number;
   messaging: {
     sent: number;
@@ -34,18 +34,11 @@ interface DashboardStats {
     id: string;
     name: string;
     channel: string;
-    segmentName: string;
+    datasetName: string;
     audience: number;
     createdAt: string;
   }[];
 }
-
-const fmtINR = (n: number) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(n);
 
 const CHANNEL_COLORS: Record<string, string> = {
   whatsapp: "#22c55e",
@@ -73,7 +66,6 @@ export default function OverviewPage() {
       </div>
     );
   }
-  if (!stats) return <TruckLoader />;
 
   const m = stats.messaging;
   const funnelData = [
@@ -97,14 +89,14 @@ export default function OverviewPage() {
 
   const cards = [
     {
-      label: "Customers",
-      value: stats.customers.toLocaleString("en-IN"),
-      icon: Users,
+      label: "Datasets",
+      value: stats.datasets.toLocaleString("en-IN"),
+      icon: Database,
     },
     {
-      label: "Total revenue",
-      value: fmtINR(stats.totalRevenue),
-      icon: IndianRupee,
+      label: "Total rows",
+      value: stats.totalRows.toLocaleString("en-IN"),
+      icon: Rows3,
     },
     {
       label: "Campaigns",
@@ -151,7 +143,6 @@ export default function OverviewPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Funnel */}
         <div className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp className="h-4 w-4 text-blue-600" />
@@ -314,7 +305,7 @@ export default function OverviewPage() {
               <div>
                 <div className="font-medium text-slate-900">{c.name}</div>
                 <div className="text-sm text-slate-500 mt-0.5">
-                  {c.segmentName}
+                  {c.datasetName}
                 </div>
               </div>
               <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">

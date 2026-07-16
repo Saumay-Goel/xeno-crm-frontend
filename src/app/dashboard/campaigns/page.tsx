@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { TruckLoader } from "@/components/ui/truck-loader";
 import {
   Table,
   TableBody,
@@ -12,7 +13,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 
 interface Campaign {
@@ -21,7 +21,7 @@ interface Campaign {
   channel: string;
   status: string;
   createdAt: string;
-  segment: { name: string };
+  dataset: { name: string } | null;
   _count: { communications: number };
 }
 
@@ -46,7 +46,9 @@ export default function CampaignsPage() {
       </div>
 
       {loading ? (
-        <Skeleton className="h-64 w-full" />
+        <div className="flex min-h-[400px] w-full items-center justify-center text-slate-400">
+          <TruckLoader />
+        </div>
       ) : campaigns.length === 0 ? (
         <Card className="p-8 text-center text-muted-foreground">
           No campaigns yet. Build one in Compose.
@@ -57,7 +59,7 @@ export default function CampaignsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Segment</TableHead>
+                <TableHead>Dataset</TableHead>
                 <TableHead>Channel</TableHead>
                 <TableHead className="text-right">Audience</TableHead>
                 <TableHead>Sent</TableHead>
@@ -68,14 +70,14 @@ export default function CampaignsPage() {
                 <TableRow key={c.id} className="cursor-pointer">
                   <TableCell className="font-medium">
                     <Link
-                      href={`/campaigns/${c.id}`}
+                      href={`/dashboard/campaigns/${c.id}`}
                       className="hover:underline"
                     >
                       {c.name}
                     </Link>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {c.segment.name}
+                    {c.dataset?.name ?? "—"}
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="capitalize">

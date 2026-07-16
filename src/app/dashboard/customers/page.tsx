@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { Upload, Trash2, Database, Loader2, Sparkles } from "lucide-react";
 import Lottie from "lottie-react";
+import { TruckLoader } from "@/components/ui/truck-loader";
 import rocketAnim from "@/assets/rocket.json";
 
 interface DatasetColumn {
@@ -204,12 +205,11 @@ export default function CustomersPage() {
       </div>
 
       {loadingList ? (
-        <div className="flex justify-center py-24 text-slate-400">
-          <Loader2 className="h-6 w-6 animate-spin" />
+        <div className="flex min-h-[400px] w-full items-center justify-center text-slate-400">
+          <TruckLoader />
         </div>
       ) : datasets.length === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          {/* drag-and-drop upload zone */}
           <div
             onClick={() => !uploading && fileRef.current?.click()}
             onDragOver={(e) => {

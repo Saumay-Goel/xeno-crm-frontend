@@ -6,8 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   MessageSquarePlus,
-  Users,
-  Filter,
+  Database,
   Send,
   LogOut,
   Menu,
@@ -26,8 +25,7 @@ interface AuthUser {
 const NAV = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/compose", label: "Compose", icon: MessageSquarePlus },
-  { href: "/dashboard/customers", label: "Customers", icon: Users },
-  { href: "/dashboard/segments", label: "Segments", icon: Filter },
+  { href: "/dashboard/customers", label: "Data", icon: Database },
   { href: "/dashboard/campaigns", label: "Campaigns", icon: Send },
 ];
 

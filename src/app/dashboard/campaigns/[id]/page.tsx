@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { TruckLoader } from "@/components/ui/truck-loader";
 
 interface FunnelData {
   campaign: {
@@ -13,7 +13,7 @@ interface FunnelData {
     name: string;
     channel: string;
     status: string;
-    segmentName: string;
+    datasetName: string;
     createdAt: string;
   };
   funnel: {
@@ -62,7 +62,12 @@ export default function CampaignDetailPage() {
     return () => clearInterval(interval);
   }, [load]);
 
-  if (loading) return <Skeleton className="h-96 w-full" />;
+  if (loading)
+    return (
+      <div className="flex min-h-[400px] w-full items-center justify-center text-slate-400">
+        <TruckLoader />
+      </div>
+    );
   if (!data)
     return <p className="text-muted-foreground">Campaign not found.</p>;
 
@@ -77,7 +82,7 @@ export default function CampaignDetailPage() {
         <div>
           <h1 className="text-2xl font-semibold">{campaign.name}</h1>
           <p className="text-muted-foreground text-sm">
-            {campaign.segmentName} ·{" "}
+            {campaign.datasetName} ·{" "}
             <span className="capitalize">{campaign.channel}</span>
           </p>
         </div>
